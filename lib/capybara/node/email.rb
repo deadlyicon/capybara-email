@@ -1,12 +1,12 @@
 # this is a node that wraps an email
 class Capybara::Node::Email < Capybara::Node::Document
 
-  # base should act like a Mail::Message
-  delegate :subject, :to, :from, :reply_to, to: :base
-
   def open
     session.driver.current_email = self
   end
+
+  # base should act like a Capybara::Email::Driver
+  delegate :subject, :to, :from, :reply_to, to: :base
 
   def text
     dom.text
@@ -22,22 +22,6 @@ class Capybara::Node::Email < Capybara::Node::Document
 
   def body
     html
-  end
-
-  def find_xpath(query)
-    find(:xpath, query)
-  end
-
-  def find_css(query)
-    find(:css, query)
-  end
-
-  def find(format, selector)
-    if format==:css
-      dom.css(selector, Capybara::RackTest::CSSHandlers.new)
-    else
-      dom.xpath(selector)
-    end.map { |node| Capybara::Email::Node.new(self, node) }
   end
 
   private
