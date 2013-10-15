@@ -18,3 +18,8 @@ if defined?(ActionMailer)
   # So we must eager-load it
   ActionMailer::Base
 end
+
+
+Capybara.register_driver :email do |app|
+  Capybara::Email::Driver.new(app)
+end

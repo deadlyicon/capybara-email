@@ -1,5 +1,46 @@
 module Capybara::Email::DSL
 
+  def open_email email
+    if Capybara.current_driver != :email
+      @web_capybara_driver       = Capybara.current_driver
+      @web_capybara_session_name = Capybara.session_name
+      @web_capybara_app          = Capybara.app
+      Capybara.current_driver = :email
+    end
+    Capybara.app = email
+  end
+
+  attr_reader :current_recipient_email_address
+  def open_inbox! recipient_email_address
+    if Capybara.current_driver != :email
+      @web_capybara_driver       = Capybara.current_driver
+      @web_capybara_session_name = Capybara.session_name
+      @web_capybara_app          = Capybara.app
+      Capybara.current_driver = :email
+    end
+    Capybara.current_driver.recipient_email_address = recipient_email_address
+  end
+
+  def close_inbox!
+    if Capybara.current_driver == :email
+      Capybara.current_driver = @web_capybara_driver
+      Capybara.session_name   = @web_capybara_session_name
+      Capybara.app            = @web_capybara_app
+    end
+  end
+
+  def visit url
+    close_inbox!
+    super
+  end
+
+  def emails
+
+  end
+
+
+
+
   # Returns the currently set email.
   # If no email set will return nil.
   #
@@ -11,7 +52,10 @@ module Capybara::Email::DSL
   #
   # @return [Array]
   def all_emails
-    Mail::TestMailer.deliveries
+    Mail::TestMailer.deliveries.map do |email|
+      driver = Capybara::Email::Driver.new(email)
+      Capybara::Node::Email.new(Capybara.current_session, driver)
+    end
   end
 
   # Access all emails for a recipient.
@@ -34,7 +78,6 @@ module Capybara::Email::DSL
   def first_email_sent_to(recipient)
     self.current_email = emails_sent_to(recipient).last
   end
-  alias :open_email :first_email_sent_to
 
   # Returns a collection of all current emails retrieved
   #

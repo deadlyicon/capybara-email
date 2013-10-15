@@ -1,4 +1,11 @@
+# this is a node that wraps an email
 class Capybara::Node::Email < Capybara::Node::Document
+
+  # base is a driver
+
+  def email
+    @base
+  end
 
   # Delegate to the email body
   #
