@@ -23,3 +23,20 @@ end
 Capybara.register_driver :email do |app|
   Capybara::Email::Driver.new(app)
 end
+
+
+class Capybara::Session
+
+  def emails
+    Capybara.using_driver(:email){
+      Capybara.current_session.driver.emails
+    }
+  end
+
+  def current_email
+    Capybara.using_driver(:email){
+      Capybara.current_session.driver.current_email
+    }
+  end
+
+end
