@@ -4,11 +4,20 @@ class Capybara::Email::Driver < Capybara::Driver::Base
     # we dont need the app
   end
 
+  attr_accessor :web_session
+
+  # def follow(method, path, attributes = {})
+  #   web_session.driver.follow(method, path, attributes)
+  # end
+  def visit(path)
+    web_session.driver.visit path
+  end
+
   attr_accessor :current_email
 
   def emails
     Mail::TestMailer.deliveries.map do |email|
-      Capybara::Email::Node.new(self, email)
+      Capybara::Node::Email.new(Capybara.current_session, email)
     end
   end
 
@@ -34,10 +43,6 @@ class Capybara::Email::Driver < Capybara::Driver::Base
 
   def current_url
     raise Capybara::NotSupportedByDriverError, "#{self.class}#current_url"
-  end
-
-  def visit(path)
-    raise Capybara::NotSupportedByDriverError, "#{self.class}#visit"
   end
 
   def execute_script(script)

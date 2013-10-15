@@ -1,44 +1,13 @@
 # this is an html node in an email
-class Capybara::Email::Node < Capybara::Driver::Node
+class Capybara::Email::Node < Capybara::RackTest::Node
 
-  def initialize(driver, native)
-    @driver = driver
-    @native = native
-  end
-
-  def visible?
-    true
-  end
-
-  def open
-    driver.current_email = self
-  end
-
-  def html
-    @html ||= html_content || convert_to_html(text)
-  end
-
-  def dom
-    @dom ||= Nokogiri::HTML(html)
-  end
-
-  def text
-    dom.text
-  end
-  alias_method :visible_text, :text
-  alias_method :all_text, :text
-
-
-  private
-
-  def text_content
-    return native.text_part.try(:body).to_s if native.multipart?
-    return native.body.to_s if native.mime_type == 'text/plain'
-  end
-
-  def html_content
-    return native.html_part.try(:body).try(:to_s) if native.multipart?
-    return native.body.to_s if content_type.mime_type == 'text/html'
+  def click
+    if tag_name == 'a'
+      driver.visit(self[:href].to_s)
+    # elsif (tag_name == 'input' and %w(submit image).include?(type)) or
+    #     ((tag_name == 'button') and type.nil? or type == "submit")
+    #   Capybara::RackTest::Form.new(driver, form).submit(self)
+    end
   end
 
   # def text
@@ -99,11 +68,5 @@ class Capybara::Email::Node < Capybara::Driver::Node
   #   @string_node ||= Capybara::Node::Simple.new(native)
   # end
 
-  def convert_to_html(text)
-    "<html><body>#{convert_links(text)}</body></html>"
-  end
 
-  def convert_links(text)
-    text.gsub(%r{(https?://\S+)}, %q{<a href="\1">\1</a>})
-  end
 end
